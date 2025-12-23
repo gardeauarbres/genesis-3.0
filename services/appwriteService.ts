@@ -46,7 +46,10 @@ class AppwriteService {
 
         // Écouter les changements de config
         if (typeof window !== 'undefined') {
-            window.addEventListener('genesis-config-updated', () => this.checkConfiguration());
+            window.addEventListener('genesis-config-updated', () => {
+                this.checkConfiguration();
+                console.log("[APPWRITE] Configuration rechargée via événement admin.");
+            });
         }
     }
 
