@@ -105,10 +105,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         alert("Domaine copié ! Ajoutez-le dans Appwrite > Overview > Platforms > Add Web App");
     };
 
-    const handleDemoMode = () => {
-        sfx.playConfirm();
-        onLoginSuccess('GHOST_AGENT', false);
-    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -130,12 +127,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         try {
             let user;
 
-            // BYPASS ADMIN LOCAL
-            if (email === 'admin@genesis.core' && password === 'ADMIN-GENESIS-ROOT') {
-                onLoginSuccess('ADMINISTRATEUR', true);
-                return;
-            }
-
+            // AUTHENTIFICATION APPWRITE STANDARD
             if (mode === 'register') {
                 await appwriteService.register(email, password, name);
                 user = await appwriteService.getCurrentUser();
@@ -281,11 +273,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => setIsNetworkError(false)} className="flex-1 py-2 bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] font-bold uppercase rounded-lg transition-colors">
+                                    <button onClick={() => setIsNetworkError(false)} className="w-full py-2 bg-white/10 hover:bg-white/20 text-gray-300 text-[10px] font-bold uppercase rounded-lg transition-colors">
                                         Réessayer
-                                    </button>
-                                    <button onClick={handleDemoMode} className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold uppercase rounded-lg transition-colors border border-blue-500">
-                                        Mode Démo (Hors Ligne)
                                     </button>
                                 </div>
                             </div>
@@ -335,8 +324,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                                 type="submit"
                                 disabled={loading}
                                 className={`w-full py-4 rounded-xl font-bold uppercase tracking-[0.2em] transition-all duration-300 relative overflow-hidden group mt-4 ${loading
-                                        ? 'bg-blue-900/50 text-blue-300 cursor-wait'
-                                        : 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transform hover:scale-[1.02]'
+                                    ? 'bg-blue-900/50 text-blue-300 cursor-wait'
+                                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transform hover:scale-[1.02]'
                                     }`}
                             >
                                 {loading ? (
