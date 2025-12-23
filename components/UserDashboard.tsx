@@ -9,11 +9,11 @@ interface UserDashboardProps {
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) => {
     const [notes, setNotes] = useState(localStorage.getItem('user_notes') || '');
-    const [xp, setXp] = useState(parseInt(localStorage.getItem('user_xp') || '0'));
+    const [credits, setCredits] = useState(parseInt(localStorage.getItem('user_credits') || '0'));
 
-    // Simulate leveling
-    const level = Math.floor(xp / 1000) + 1;
-    const progress = (xp % 1000) / 10;
+    // Simulate clearance level
+    const clearance = Math.floor(credits / 1000) + 1;
+    const progress = (credits % 1000) / 10;
 
     useEffect(() => {
         sfx.playConfirm();
@@ -26,10 +26,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
 
     const handleMission = () => {
         sfx.playData();
-        const newXp = xp + 150;
-        setXp(newXp);
-        localStorage.setItem('user_xp', newXp.toString());
-        alert("Mission Simulée Complétée ! +150 XP");
+        const newCredits = credits + 150;
+        setCredits(newCredits);
+        localStorage.setItem('user_credits', newCredits.toString());
+        alert("Mission: SUCCÈS CONFIRMÉ.\n+150 Crédits Ops ajoutés au dossier agent.");
     };
 
     return (
@@ -52,10 +52,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
                     </h1>
                     <div className="flex items-center gap-4 mt-2">
                         <span className="px-3 py-1 text-xs font-bold uppercase rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                            Niveau {level}
+                            Habilitation Niv.{clearance}
                         </span>
                         <span className="px-3 py-1 text-xs font-bold uppercase rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                            Accréditation Beta
+                            {credits} Crédits Ops
                         </span>
                     </div>
                 </div>
