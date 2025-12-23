@@ -241,6 +241,57 @@ class AppwriteService {
             return [];
         }
     }
+    // --- USER PROFILES ---
+
+    async getUserProfile(userId: string) {
+        if (!this.isConfigured) return null;
+        try {
+            const response = await this.databases.listDocuments(
+                this.currentDbId,
+                'user_profiles', // Assumes collection exists
+                [Query.equal('user_id', userId)]
+            );
+
+            if (response.documents.length > 0) {
+                return response.documents[0];
+            } else {
+                // Create profile if not exists
+                return await this.databases.createDocument(
+                    this.currentDbId,
+                    'user_profiles',
+                    ID.unique(),
+                    {
+                        user_id: userId,
+                        credits: 0,
+                        notes: '',
+                        clearance_level: 1
+                    }
+                );
+            }
+        } catch (error) {
+            console.warn("[APPWRITE] Profile Fetch Error (likely collection missing):", error);
+            return null;
+        }
+    }
+
+    async updateUserProfile(userId: string, data: { credits?: number, notes?: string, clearance_level?: number }) {
+        if (!this.isConfigured) return false;
+        try {
+            const profile = await this.getUserProfile(userId);
+            if (!profile) return false;
+
+            await this.databases.updateDocument(
+                this.currentDbId,
+                'user_profiles',
+                profile.$id,
+                data
+            );
+            return true;
+        } catch (error) {
+            console.error("[APPWRITE] Profile Update Error:", error);
+            return false;
+        }
+    }
 }
 
 export const appwriteService = new AppwriteService();

@@ -7,9 +7,13 @@ interface UserDashboardProps {
     onNavigate: (view: AppView) => void;
 }
 
+import { appwriteService } from '../services/appwriteService';
+
 const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) => {
     const [notes, setNotes] = useState(localStorage.getItem('user_notes') || '');
     const [credits, setCredits] = useState(parseInt(localStorage.getItem('user_credits') || '0'));
+    const [userId, setUserId] = useState<string | null>(localStorage.getItem('user_id'));
+    const [syncStatus, setSyncStatus] = useState<'LOCAL' | 'CLOUD'>('LOCAL');
 
     // Simulate clearance level
     const clearance = Math.floor(credits / 1000) + 1;
@@ -17,19 +21,57 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
 
     useEffect(() => {
         sfx.playConfirm();
+        initializeSession();
     }, []);
 
-    const saveNotes = (val: string) => {
-        setNotes(val);
-        localStorage.setItem('user_notes', val);
+    const initializeSession = async () => {
+        let currentId = userId;
+        // Try to get real user
+        const user = await appwriteService.getCurrentUser();
+        if (user) {
+            currentId = user.$id;
+            setUserId(currentId);
+            localStorage.setItem('user_id', currentId);
+            setSyncStatus('CLOUD');
+        } else if (!currentId) {
+            currentId = 'anon_' + Math.random().toString(36).substr(2, 9);
+            setUserId(currentId);
+            localStorage.setItem('user_id', currentId);
+        }
+
+        if (currentId && user) {
+            const profile = await appwriteService.getUserProfile(currentId);
+            if (profile) {
+                if (profile.credits) {
+                    setCredits(profile.credits);
+                    localStorage.setItem('user_credits', profile.credits.toString());
+                }
+                if (profile.notes) {
+                    setNotes(profile.notes);
+                    localStorage.setItem('user_notes', profile.notes);
+                }
+            }
+        }
     };
 
-    const handleMission = () => {
+    const saveNotes = async (val: string) => {
+        setNotes(val);
+        localStorage.setItem('user_notes', val);
+        if (userId && syncStatus === 'CLOUD') {
+            await appwriteService.updateUserProfile(userId, { notes: val });
+        }
+    };
+
+    const handleMission = async () => {
         sfx.playData();
         const newCredits = credits + 150;
         setCredits(newCredits);
         localStorage.setItem('user_credits', newCredits.toString());
         alert("Mission: SUCCÈS CONFIRMÉ.\n+150 Crédits Ops ajoutés au dossier agent.");
+
+        if (userId && syncStatus === 'CLOUD') {
+            await appwriteService.updateUserProfile(userId, { credits: newCredits });
+        }
     };
 
     return (
@@ -112,7 +154,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
                 <div className="glass p-6 rounded-2xl border border-white/5 flex flex-col h-64 md:h-auto">
                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex justify-between">
                         <span>Notes Personnelles</span>
-                        <span className="text-[9px] opacity-50 text-green-400">SYNC: LOCALE</span>
+                        <span className={`text-[9px] opacity-50 ${syncStatus === 'CLOUD' ? 'text-blue-400' : 'text-green-400'}`}>SYNC: {syncStatus}</span>
                     </h3>
                     <textarea
                         className="flex-1 bg-black/50 border border-white/10 rounded-lg p-3 text-xs font-mono text-gray-300 focus:border-blue-500/50 outline-none resize-none"
