@@ -109,6 +109,25 @@ const App: React.FC = () => {
         setPendingNexus({ agentId: payload.agentId, query: payload.query });
         setActiveView('fusion');
         break;
+      case 'system_control': {
+        const { action } = payload;
+        if (action === 'reboot') window.location.reload();
+        if (action === 'shutdown') setShutdown(true);
+        if (action === 'logout') handleLogout();
+        if (action === 'open_admin') setIsAdminMode(true);
+        break;
+      }
+      case 'threat_defense': {
+        // Broadcast defense mode to map/threats via globalAction
+        setMapConfig(prev => ({ ...prev, layer: 'thermal', ghostMode: true }));
+        if (activeView !== 'threats') setActiveView('threats');
+        break;
+      }
+      case 'update_vis_config': {
+        setPendingVisual({ prompt: "AUDIO REACTIVE CORE", type: 'image' }); // Helper to ensure vis loads with something
+        if (activeView !== 'visualizer') setActiveView('visualizer');
+        break;
+      }
     }
     setGlobalAction({ type, payload });
   };
