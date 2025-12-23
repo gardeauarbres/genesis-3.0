@@ -1,0 +1,9 @@
+{
+  "name": "Genèsis Quantum  IA",
+  "description": "Système IA auto-réplicatif sécurisé par PQC avec mémoire récursive et monitoring en temps réel.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
