@@ -1,23 +1,35 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Layout from './components/Layout';
 import ArchitectureViewer from './components/ArchitectureViewer';
-import Visualizer from './components/Visualizer';
-import SearchPortal from './components/SearchPortal';
-import KillSwitch from './components/KillSwitch';
-import DebuggingAssistant from './components/DebuggingAssistant';
-import ConsciousnessStream from './components/ConsciousnessStream';
-import GlobalMap from './components/GlobalMap';
-import PostQuantumVault from './components/PostQuantumVault';
-import ThreatMonitor from './components/ThreatMonitor';
-import EvolutionLab from './components/EvolutionLab';
 import BootSequence from './components/BootSequence';
-import MultiAgentFusion from './components/MultiAgentFusion';
-import LiveSession from './components/LiveSession';
 import LoginScreen from './components/LoginScreen';
-import AdminDashboard from './components/AdminDashboard';
-import { AppView, ThreatTrajectory, TranscriptionEntry } from './types';
+import { AppView, ThreatTrajectory } from './types';
 import { appwriteService } from './services/appwriteService';
+
+// Lazy Loading des composants lourds ou non-critiques au démarrage
+const Visualizer = React.lazy(() => import('./components/Visualizer'));
+const SearchPortal = React.lazy(() => import('./components/SearchPortal'));
+const KillSwitch = React.lazy(() => import('./components/KillSwitch'));
+const DebuggingAssistant = React.lazy(() => import('./components/DebuggingAssistant'));
+const ConsciousnessStream = React.lazy(() => import('./components/ConsciousnessStream'));
+const GlobalMap = React.lazy(() => import('./components/GlobalMap'));
+const PostQuantumVault = React.lazy(() => import('./components/PostQuantumVault'));
+const ThreatMonitor = React.lazy(() => import('./components/ThreatMonitor'));
+const EvolutionLab = React.lazy(() => import('./components/EvolutionLab'));
+const MultiAgentFusion = React.lazy(() => import('./components/MultiAgentFusion'));
+const LiveSession = React.lazy(() => import('./components/LiveSession'));
+const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
+
+// Composant de chargement simple pour les transitions
+const ViewLoader = () => (
+  <div className="flex items-center justify-center h-full w-full">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <span className="text-xs text-blue-400 font-mono animate-pulse">LOADING MODULE...</span>
+    </div>
+  </div>
+);
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -33,7 +45,7 @@ const App: React.FC = () => {
   const [pendingVisual, setPendingVisual] = useState<{ prompt: string; type: 'image' | 'video' } | null>(null);
   const [pendingNexus, setPendingNexus] = useState<{ agentId: string; query: string } | null>(null);
   const [globalAction, setGlobalAction] = useState<{ type: string, payload?: any } | null>(null);
-  
+
   const [activeTrajectory, setActiveTrajectory] = useState<ThreatTrajectory | null>(null);
 
   const [mapConfig, setMapConfig] = useState<{
@@ -44,17 +56,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-        try {
-            const user = await appwriteService.getCurrentUser();
-            if (user) {
-                setAgentIdentity(user.name);
-                setIsLoggedIn(true);
-            }
-        } catch (e) {
-            console.log("Pas de session active.");
-        } finally {
-            setAuthLoading(false);
+      try {
+        const user = await appwriteService.getCurrentUser();
+        if (user) {
+          setAgentIdentity(user.name);
+          setIsLoggedIn(true);
         }
+      } catch (e) {
+        console.log("Pas de session active.");
+      } finally {
+        setAuthLoading(false);
+      }
     };
     checkSession();
   }, []);
@@ -82,30 +94,30 @@ const App: React.FC = () => {
 
   const handleTrackThreat = (trajectory: ThreatTrajectory) => {
     setActiveTrajectory(trajectory);
-    setMapConfig(prev => ({ ...prev, layer: 'thermal' })); 
+    setMapConfig(prev => ({ ...prev, layer: 'thermal' }));
     setActiveView('map');
   };
 
   const handleGlobalAction = (type: string, payload?: any) => {
     switch (type) {
-        case 'trigger_mutation': setActiveView('evolution'); break;
-        case 'update_map_config':
-            setMapConfig(prev => ({ ...prev, ...payload }));
-            if (activeView !== 'map') setActiveView('map');
-            break;
-        case 'nexus_interaction':
-            setPendingNexus({ agentId: payload.agentId, query: payload.query });
-            setActiveView('fusion');
-            break;
+      case 'trigger_mutation': setActiveView('evolution'); break;
+      case 'update_map_config':
+        setMapConfig(prev => ({ ...prev, ...payload }));
+        if (activeView !== 'map') setActiveView('map');
+        break;
+      case 'nexus_interaction':
+        setPendingNexus({ agentId: payload.agentId, query: payload.query });
+        setActiveView('fusion');
+        break;
     }
     setGlobalAction({ type, payload });
   };
 
   const handleLogout = async () => {
-      await appwriteService.logout();
-      setIsLoggedIn(false);
-      setIsAdminMode(false);
-      setBooted(false);
+    await appwriteService.logout();
+    setIsLoggedIn(false);
+    setIsAdminMode(false);
+    setBooted(false);
   };
 
   const renderView = () => {
@@ -122,12 +134,12 @@ const App: React.FC = () => {
       case 'debugger': return <DebuggingAssistant />;
       case 'killswitch': return <KillSwitch />;
       case 'lab': return (
-        <LiveSession 
-            onNavigate={setActiveView}
-            onVoiceSearch={handleVoiceSearch}
-            onVoiceVisualize={handleVoiceVisualize}
-            onMapQuery={handleMapQuery}
-            onAction={handleGlobalAction}
+        <LiveSession
+          onNavigate={setActiveView}
+          onVoiceSearch={handleVoiceSearch}
+          onVoiceVisualize={handleVoiceVisualize}
+          onMapQuery={handleMapQuery}
+          onAction={handleGlobalAction}
         />
       );
       default: return <ArchitectureViewer />;
@@ -147,23 +159,30 @@ const App: React.FC = () => {
   }
 
   if (authLoading) {
-      return <div className="fixed inset-0 bg-black flex items-center justify-center"><div className="w-10 h-10 border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div></div>;
+    return <div className="fixed inset-0 bg-black flex items-center justify-center"><div className="w-10 h-10 border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div></div>;
   }
 
   if (!isLoggedIn) {
-      return (
-        <LoginScreen 
-            onLoginSuccess={(name, admin) => { 
-                setIsLoggedIn(true); 
-                setAgentIdentity(name); 
-                if (admin) setIsAdminMode(true);
-            }} 
+    return (
+      <React.Fragment>
+        {/* LoginScreen est eager, pas besoin de suspense ici si c'est le seul rendu */}
+        <LoginScreen
+          onLoginSuccess={(name, admin) => {
+            setIsLoggedIn(true);
+            setAgentIdentity(name);
+            if (admin) setIsAdminMode(true);
+          }}
         />
-      );
+      </React.Fragment>
+    );
   }
 
   if (isAdminMode) {
-      return <AdminDashboard onClose={() => { setIsAdminMode(false); }} />;
+    return (
+      <Suspense fallback={<div className="fixed inset-0 bg-black/90 flex items-center justify-center text-red-500 font-mono">INITIALIZING ADMIN CORE...</div>}>
+        <AdminDashboard onClose={() => { setIsAdminMode(false); }} />
+      </Suspense>
+    );
   }
 
   if (!booted) {
@@ -172,14 +191,15 @@ const App: React.FC = () => {
 
   return (
     <Layout activeView={activeView} setView={setActiveView}>
-      {renderView()}
-      
+      <Suspense fallback={<ViewLoader />}>
+        {renderView()}
+      </Suspense>
+
       {/* Mobile Logout Button */}
       <div className="fixed top-4 right-4 z-50 lg:hidden">
-          <button onClick={handleLogout} className="text-[10px] text-red-500 bg-black/50 px-2 py-1 rounded border border-red-500/20">LOGOUT</button>
+        <button onClick={handleLogout} className="text-[10px] text-red-500 bg-black/50 px-2 py-1 rounded border border-red-500/20">LOGOUT</button>
       </div>
     </Layout>
   );
 };
-
 export default App;
