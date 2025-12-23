@@ -20,6 +20,7 @@ const EvolutionLab = React.lazy(() => import('./components/EvolutionLab'));
 const MultiAgentFusion = React.lazy(() => import('./components/MultiAgentFusion'));
 const LiveSession = React.lazy(() => import('./components/LiveSession'));
 const AdminDashboard = React.lazy(() => import('./components/AdminDashboard'));
+const UserDashboard = React.lazy(() => import('./components/UserDashboard'));
 
 // Composant de chargement simple pour les transitions
 const ViewLoader = () => (
@@ -152,6 +153,7 @@ const App: React.FC = () => {
       case 'search': return <SearchPortal initialQuery={pendingSearch} onConsumed={() => setPendingSearch(null)} />;
       case 'debugger': return <DebuggingAssistant />;
       case 'killswitch': return <KillSwitch />;
+      case 'dashboard': return <UserDashboard identity={agentIdentity} onNavigate={setActiveView} />;
       case 'lab': return (
         <LiveSession
           onNavigate={setActiveView}

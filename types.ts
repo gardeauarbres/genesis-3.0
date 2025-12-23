@@ -1,5 +1,5 @@
 
-export type AppView = 'architecture' | 'lab' | 'visualizer' | 'search' | 'killswitch' | 'debugger' | 'consciousness' | 'map' | 'vault' | 'threats' | 'evolution' | 'fusion';
+export type AppView = 'architecture' | 'lab' | 'visualizer' | 'search' | 'killswitch' | 'debugger' | 'consciousness' | 'map' | 'vault' | 'threats' | 'evolution' | 'fusion' | 'dashboard';
 
 export interface EvolutionPatch {
   generation: number;
