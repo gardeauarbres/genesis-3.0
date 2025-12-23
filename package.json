@@ -9,6 +9,9 @@
     "vercel-build": "vite build",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@google/genai": "^1.34.0",
     "@vitejs/plugin-react": "^5.0.0",
