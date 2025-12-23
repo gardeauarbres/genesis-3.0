@@ -70,7 +70,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
                     <div className="grid grid-cols-2 gap-3">
                         <button onClick={() => onNavigate('lab')} className="p-4 bg-white/5 hover:bg-blue-600/20 border border-white/5 hover:border-blue-500/50 rounded-xl transition-all text-left group">
                             <div className="text-lg mb-1 group-hover:scale-110 transition-transform">🎤</div>
-                            <div className="text-xs font-bold text-gray-300 group-hover:text-blue-300">Omega Voice</div>
+                            <div className="text-xs font-bold text-gray-300 group-hover:text-blue-300">Interface Vocale</div>
                         </button>
                         <button onClick={() => onNavigate('map')} className="p-4 bg-white/5 hover:bg-green-600/20 border border-white/5 hover:border-green-500/50 rounded-xl transition-all text-left group">
                             <div className="text-lg mb-1 group-hover:scale-110 transition-transform">🌍</div>
@@ -112,7 +112,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ identity, onNavigate }) =
                 <div className="glass p-6 rounded-2xl border border-white/5 flex flex-col h-64 md:h-auto">
                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex justify-between">
                         <span>Notes Personnelles</span>
-                        <span className="text-[9px] opacity-50 text-green-400">SYNC: LOCAL</span>
+                        <span className="text-[9px] opacity-50 text-green-400">SYNC: LOCALE</span>
                     </h3>
                     <textarea
                         className="flex-1 bg-black/50 border border-white/10 rounded-lg p-3 text-xs font-mono text-gray-300 focus:border-blue-500/50 outline-none resize-none"

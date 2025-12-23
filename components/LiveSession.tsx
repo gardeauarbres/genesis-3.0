@@ -639,9 +639,9 @@ const LiveSession: React.FC<LiveSessionProps> = ({ onNavigate, onVoiceSearch, on
                 </div>
               ) : isActive ? (
                 <div className="text-center group-hover:scale-110 transition-transform">
-                  <div className="text-xs font-bold text-blue-300 mb-1 group-hover:hidden">ONLINE</div>
+                  <div className="text-xs font-bold text-blue-300 mb-1 group-hover:hidden">EN LIGNE</div>
                   <div className="hidden group-hover:block text-xs font-bold text-red-400">ARRÊT</div>
-                  <div className="text-[9px] text-blue-500/60 font-mono">{activeTasks.length > 0 ? 'BUSY' : 'READY'}</div>
+                  <div className="text-[9px] text-blue-500/60 font-mono">{activeTasks.length > 0 ? 'OCCUPÉ' : 'PRÊT'}</div>
                 </div>
               ) : (
                 <div className="text-center">
