@@ -4,25 +4,49 @@ import { NeuralKey } from '../types';
 import { geminiService } from '../services/geminiService';
 import { memory } from '../services/memory';
 import { sfx } from '../services/sfx';
+import { appwriteService } from '../services/appwriteService';
 
 const PostQuantumVault: React.FC = () => {
   const [keys, setKeys] = useState<NeuralKey[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'LOCAL' | 'CLOUD'>('LOCAL');
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Charger les clés depuis la mémoire persistante
-    memory.getByType('key').then((fragments) => {
-      if (fragments.length > 0) {
-        setKeys(fragments.map(f => f.metadata));
-      } else {
-        // Données initiales si vide
-        setKeys([
-          { id: 'NK-892', algorithm: 'Kyber-1024', entropy: 99.8, status: 'active', signature: 'LATTICE_α_892_V2' },
-          { id: 'NK-421', algorithm: 'Dilithium-5', entropy: 99.1, status: 'active', signature: 'SIG_FORCE_421_Ω' }
-        ]);
-      }
-    });
+    initializeVault();
   }, []);
+
+  const initializeVault = async () => {
+    // Try to get authenticated user for cloud sync
+    try {
+      const user = await appwriteService.getCurrentUser();
+      if (user) {
+        setUserId(user.$id);
+        setSyncStatus('CLOUD');
+
+        // Load keys from cloud
+        const cloudKeys = await appwriteService.getVaultKeys(user.$id);
+        if (cloudKeys.length > 0) {
+          setKeys(cloudKeys);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[VAULT] Cloud sync unavailable, using local storage");
+    }
+
+    // Fallback to local memory
+    const fragments = await memory.getByType('key');
+    if (fragments.length > 0) {
+      setKeys(fragments.map(f => f.metadata));
+    } else {
+      // Initial demo data
+      setKeys([
+        { id: 'NK-892', algorithm: 'Kyber-1024', entropy: 99.8, status: 'active', signature: 'LATTICE_α_892_V2' },
+        { id: 'NK-421', algorithm: 'Dilithium-5', entropy: 99.1, status: 'active', signature: 'SIG_FORCE_421_Ω' }
+      ]);
+    }
+  };
 
   const generateKey = async () => {
     setGenerating(true);
@@ -30,16 +54,21 @@ const PostQuantumVault: React.FC = () => {
     try {
       const algo = ['Kyber-1024', 'Dilithium-5', 'Falcon-1024', 'SPHINCS+'][Math.floor(Math.random() * 4)];
       const keyData = await geminiService.generatePQCKey(algo);
-      
+
       const newKey: NeuralKey = {
-        id: keyData.id || `NK-${Math.floor(Math.random()*1000)}`,
+        id: keyData.id || `NK-${Math.floor(Math.random() * 1000)}`,
         algorithm: keyData.algorithm || algo,
         entropy: keyData.entropy || 95.5,
         status: 'pending',
         signature: keyData.signature || 'GEN_SIG_UNKNOWN'
       };
 
-      // Sauvegarde dans le Cortex
+      // Save to cloud if authenticated
+      if (userId && syncStatus === 'CLOUD') {
+        await appwriteService.saveVaultKey(userId, newKey);
+      }
+
+      // Also save to local memory as backup
       await memory.save({
         type: 'key',
         content: `Clé générée ${newKey.id}`,
@@ -60,10 +89,15 @@ const PostQuantumVault: React.FC = () => {
     <div className="space-y-8 animate-fadeIn h-full flex flex-col">
       <header className="flex justify-between items-end">
         <div>
-          <h2 className="text-4xl font-bold font-heading mb-2">Coffre-fort PQC</h2>
+          <div className="flex items-center gap-4 mb-2">
+            <h2 className="text-4xl font-bold font-heading">Coffre-fort PQC</h2>
+            <span className={`text-[9px] font-mono px-2 py-0.5 rounded border ${syncStatus === 'CLOUD' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' : 'text-green-400 border-green-500/30 bg-green-500/10'}`}>
+              {syncStatus === 'CLOUD' ? '☁ CLOUD_SYNC' : '💾 LOCAL'}
+            </span>
+          </div>
           <p className="text-gray-400">Gestion des signatures neurales basées sur les réseaux cryptographiques.</p>
         </div>
-        <button 
+        <button
           onClick={generateKey}
           disabled={generating}
           className="px-6 py-3 bg-blue-600 rounded-xl font-bold hover:bg-blue-500 transition-all uppercase text-[10px] tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.4)] disabled:opacity-50 flex items-center gap-2"
@@ -114,10 +148,10 @@ const PostQuantumVault: React.FC = () => {
                   <button className="flex-1 py-2 rounded-lg bg-white/5 text-[9px] font-bold uppercase hover:bg-white/10 transition-colors">Exporter</button>
                 </div>
               </div>
-              
+
               {/* Decorative scan line */}
               <div className="absolute inset-0 pointer-events-none opacity-5 group-hover:opacity-10">
-                 <div className="w-full h-1 bg-blue-400 absolute animate-[vaultScan_3s_linear_infinite]"></div>
+                <div className="w-full h-1 bg-blue-400 absolute animate-[vaultScan_3s_linear_infinite]"></div>
               </div>
             </div>
           </div>

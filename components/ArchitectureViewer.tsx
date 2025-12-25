@@ -17,12 +17,12 @@ const LatticeSimulation: React.FC<{ stress: number }> = ({ stress }) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     // Resize handling
     const parent = canvas.parentElement;
     if (parent) {
-       canvas.width = parent.clientWidth;
-       canvas.height = parent.clientHeight;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
     }
 
     const ctx = canvas.getContext('2d');
@@ -100,21 +100,21 @@ const ArchitectureViewer: React.FC = () => {
           const battery = await (navigator as any).getBattery();
           batt = battery.level * 100;
         }
-      } catch(e) {}
+      } catch (e) { }
       const cores = navigator.hardwareConcurrency || 4;
       const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
       const rtt = connection ? connection.rtt : 50;
       const perf = performance as any;
-      let memStress = 20; 
+      let memStress = 20;
       if (perf && perf.memory) {
-         const ratio = perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit;
-         memStress = Math.floor(ratio * 100);
+        const ratio = perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit;
+        memStress = Math.floor(ratio * 100);
       }
       setMetrics(prev => {
         const baseRate = 0.01;
         const loadFactor = (100 - batt) / 10000;
         const newRepRate = baseRate + loadFactor + (Math.random() * 0.002);
-        const entropyLoss = Math.min(rtt / 100, 5); 
+        const entropyLoss = Math.min(rtt / 100, 5);
         const newEntropy = +(99.9 - entropyLoss + (Math.random() * 0.5 - 0.25)).toFixed(1);
         const newStress = memStress + (rtt > 100 ? 10 : 0);
         const risk = +((newRepRate * 5000) + (100 - newEntropy) * 2 + (newStress * 0.5)).toFixed(2);
@@ -180,112 +180,159 @@ const ArchitectureViewer: React.FC = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 flex-1 min-h-0">
-        <div className="lg:col-span-2 glass p-0 rounded-[2rem] relative overflow-hidden flex flex-col min-h-[350px] md:min-h-[500px] bg-black/60 border-white/5 shadow-2xl">
-          <div className="absolute inset-0 z-0">
-            <LatticeSimulation stress={metrics.latticeStress} />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.4)_100%)]"></div>
+      {/* BENTO GRID LAYOUT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
+
+        {/* ROW 1: METRIC CARDS */}
+        <div className="glass p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors"></div>
+          <p className="text-[9px] text-gray-500 uppercase font-bold tracking-[0.2em] relative z-10">Stress Lattice</p>
+          <div className="flex items-end justify-between mt-2 relative z-10">
+            <span className={`text-2xl font-mono font-bold ${metrics.latticeStress > 70 ? 'text-amber-500 animate-pulse' : 'text-blue-400'}`}>
+              {metrics.latticeStress}%
+            </span>
+            <div className={`w-2 h-2 rounded-full ${metrics.latticeStress > 50 ? 'bg-amber-500' : 'bg-green-500'}`}></div>
           </div>
-          
-          <div className="relative z-10 p-6 md:p-10 flex flex-col h-full">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-2 h-8 rounded-full shadow-lg ${isDanger ? 'bg-red-600' : 'bg-blue-600'}`}></div>
-                <h3 className="text-lg md:text-xl font-bold font-heading uppercase tracking-widest">Oscillation Quantique</h3>
-              </div>
-              <div className="flex gap-4">
-                 <div className="px-3 py-1 md:px-4 md:py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-mono text-gray-500">CŒURS : {metrics.cores}</div>
-                 <div className="px-3 py-1 md:px-4 md:py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-mono text-gray-500">LAT : {metrics.latency}ms</div>
-              </div>
-            </div>
-            
-            <div className="flex-1 w-full min-h-[200px]">
-               <ResponsiveContainer width="100%" height="100%">
-                 <AreaChart data={history}>
-                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                   <XAxis dataKey="time" hide />
-                   <YAxis hide domain={[0, 100]} />
-                   <Tooltip 
-                     contentStyle={{ background: '#000', border: '1px solid #333', borderRadius: '12px', fontSize: '10px', fontFamily: 'monospace' }}
-                     itemStyle={{ color: '#3b82f6' }}
-                   />
-                   <Area type="monotone" dataKey="greyGooRisk" stroke={isDanger ? "#dc2626" : "#3b82f6"} fill={isDanger ? "url(#dangerGradient)" : "url(#safeGradient)"} strokeWidth={3} isAnimationActive={false} />
-                   <defs>
-                     <linearGradient id="safeGradient" x1="0" y1="0" x2="0" y2="1">
-                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                     </linearGradient>
-                     <linearGradient id="dangerGradient" x1="0" y1="0" x2="0" y2="1">
-                       <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3}/>
-                       <stop offset="95%" stopColor="#dc2626" stopOpacity={0}/>
-                     </linearGradient>
-                   </defs>
-                 </AreaChart>
-               </ResponsiveContainer>
+        </div>
+
+        <div className="glass p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-purple-600/5 group-hover:bg-purple-600/10 transition-colors"></div>
+          <p className="text-[9px] text-gray-500 uppercase font-bold tracking-[0.2em] relative z-10">Entropie Bell</p>
+          <div className="flex items-end justify-between mt-2 relative z-10">
+            <span className="text-2xl font-mono font-bold text-purple-400">{metrics.quantumEntropy}%</span>
+            <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+        </div>
+
+        <div className="glass p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-green-600/5 group-hover:bg-green-600/10 transition-colors"></div>
+          <p className="text-[9px] text-gray-500 uppercase font-bold tracking-[0.2em] relative z-10">Énergie Noyau</p>
+          <div className="flex items-end justify-between mt-2 relative z-10">
+            <span className="text-2xl font-mono font-bold text-green-400">{metrics.batteryLevel}%</span>
+            <div className="h-1.5 w-12 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500" style={{ width: `${metrics.batteryLevel}%` }}></div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 h-full">
-          <div className={`glass p-6 md:p-10 rounded-[2rem] flex-1 flex flex-col justify-between border-t-8 transition-all duration-700 shadow-2xl relative overflow-hidden ${
-            isDanger ? 'border-red-600 bg-red-600/5' : 'border-blue-600 bg-black/40'
-          }`}>
-            <div className="relative z-10 space-y-6 md:space-y-8">
-               <h3 className="text-xl md:text-2xl font-bold font-heading mb-4 flex items-center justify-between">
-                 {isDanger ? 'ALERTE CRITIQUE' : 'STATUT DU NOYAU'}
-                 {isAnalyzing && <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>}
-               </h3>
-               
-               <div className="space-y-4 md:space-y-6">
-                  {/* Status Bars */}
-                  {[
-                    { label: "Intégrité PQC", val: 100, color: "bg-green-500", txt: "text-green-400", display: "NOMINAL" },
-                    { label: "Synchronisation", val: Math.max(0, 100 - metrics.latency), color: "bg-blue-500", txt: "text-blue-400", display: `${metrics.latency}ms` },
-                    { label: "Entropie Bell", val: metrics.quantumEntropy, color: metrics.quantumEntropy < 98.2 ? 'bg-amber-500' : 'bg-green-500', txt: metrics.quantumEntropy < 98.2 ? 'text-amber-500' : 'text-green-400', display: `${metrics.quantumEntropy}%` }
-                  ].map((stat, i) => (
-                    <div className="group" key={i}>
-                      <div className="flex justify-between items-center text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2">
-                        <span>{stat.label}</span>
-                        <span className={`${stat.txt} font-bold`}>{stat.display}</span>
-                      </div>
-                      <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                        <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${stat.val}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
-               </div>
+        <div className="glass p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-red-600/5 group-hover:bg-red-600/10 transition-colors"></div>
+          <p className="text-[9px] text-gray-500 uppercase font-bold tracking-[0.2em] relative z-10">Réplication</p>
+          <div className="flex items-end justify-between mt-2 relative z-10">
+            <span className={`text-2xl font-mono font-bold ${metrics.replicationRate > 0.02 ? 'text-red-500 animate-pulse' : 'text-gray-400'}`}>
+              {(metrics.replicationRate * 100).toFixed(2)}x
+            </span>
+            <span className="text-[9px] text-gray-600 font-mono">/CYCLE</span>
+          </div>
+        </div>
+
+        {/* ROW 2: MAIN CHART (Span 3 on LG) */}
+        <div className="md:col-span-2 lg:col-span-3 glass p-0 rounded-[2rem] relative overflow-hidden flex flex-col min-h-[400px] border-white/5 shadow-2xl">
+          <div className="absolute inset-0 z-0 opacity-40">
+            <LatticeSimulation stress={metrics.latticeStress} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#000000_100%)]"></div>
+          </div>
+
+          <div className="relative z-10 p-6 md:p-8 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className={`w-1.5 h-6 rounded-full shadow-lg ${isDanger ? 'bg-red-600 animate-pulse' : 'bg-blue-500'}`}></div>
+                <div>
+                  <h3 className="text-lg font-bold font-heading uppercase tracking-widest text-white">Oscillation Quantique</h3>
+                  <p className="text-[9px] text-gray-500 font-mono">FLUX TEMPOREL RÉEL</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="px-3 py-1 bg-black/50 border border-white/10 rounded-lg text-[9px] font-mono text-blue-300">
+                  LATENCE: {metrics.latency}ms
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4 pt-10 relative z-10">
-              <div className="bg-black/60 p-4 rounded-2xl border border-white/5">
-                <p className="text-[10px] text-gray-500 font-mono italic leading-relaxed">
-                  {isConstituting ? "PROTOCOLE_DE_CONFINEMENT..." : 
-                   isDanger ? "ANOMALIE CPU/MEM DÉTECTÉE." : "Système stable. Monitoring actif."}
+            <div className="flex-1 w-full min-h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={history}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis dataKey="time" hide />
+                  <YAxis hide domain={[0, 100]} />
+                  <Tooltip
+                    contentStyle={{ background: '#050505', border: '1px solid #333', borderRadius: '8px', fontSize: '10px', fontFamily: 'monospace' }}
+                    itemStyle={{ color: '#3b82f6' }}
+                  />
+                  <Area type="monotone" dataKey="greyGooRisk" stroke={isDanger ? "#dc2626" : "#3b82f6"} fill={isDanger ? "url(#dangerGradient)" : "url(#safeGradient)"} strokeWidth={2} isAnimationActive={false} />
+                  <defs>
+                    <linearGradient id="safeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="dangerGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 2: COMMAND & CONTROL (Span 1 on LG) */}
+        <div className="md:col-span-2 lg:col-span-1 flex flex-col gap-4">
+          {/* CORE STATUS CARD */}
+          <div className={`glass p-6 rounded-[2rem] flex-1 border-t-4 transition-all duration-500 relative overflow-hidden ${isDanger ? 'border-red-500 bg-red-900/10' : 'border-blue-500 bg-blue-900/5'}`}>
+            <h3 className="text-sm font-bold font-heading uppercase tracking-widest text-white mb-6 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Intégrité Système
+            </h3>
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] text-gray-400 font-mono uppercase">
+                  <span>Synchronisation</span>
+                  <span className="text-white">{(100 - metrics.latency / 5).toFixed(1)}%</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500" style={{ width: `${Math.max(0, 100 - metrics.latency / 5)}%` }}></div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-[10px] text-gray-400 font-mono uppercase">
+                  <span>Protection PQC</span>
+                  <span className="text-green-400">ACTIF</span>
+                </div>
+                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500" style={{ width: `100%` }}></div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-black/40 rounded-xl border border-white/5 mt-4">
+                <p className="text-[9px] text-gray-500 font-mono leading-relaxed">
+                  {isConstituting ? ">> INITIALIZING CONTAINMENT..." : isDanger ? ">> CRITICAL ERROR DETECTED." : ">> SYSTEM OPTIMAL. MONITORING."}
                 </p>
               </div>
-              
-              <div className="grid grid-cols-1 gap-3">
-                <button 
-                  onClick={handleConfinement}
-                  disabled={isConstituting || isAnalyzing}
-                  className={`py-4 md:py-5 rounded-2xl font-bold uppercase tracking-[0.2em] transition-all text-[10px] md:text-xs border shadow-lg ${
-                    isDanger ? 'bg-red-600 border-red-400 text-white hover:bg-red-500' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                  } disabled:opacity-50`}
-                >
-                  {isConstituting ? 'CONFINEMENT...' : 'DÉPLOYER CONFINEMENT'}
-                </button>
-                <button 
-                  onClick={handleDiagnostic}
-                  disabled={isAnalyzing || isConstituting}
-                  className="py-4 md:py-5 bg-blue-600/10 border border-blue-500/20 text-blue-400 rounded-2xl font-bold uppercase tracking-[0.2em] transition-all text-[10px] md:text-xs hover:bg-blue-600 hover:text-white disabled:opacity-50"
-                >
-                  {isAnalyzing ? 'ANALYSE...' : 'DIAGNOSTIC GLOBAL'}
-                </button>
-              </div>
             </div>
-            <div className={`absolute -bottom-20 -right-20 w-60 h-60 blur-[100px] rounded-full transition-colors duration-1000 ${isDanger ? 'bg-red-600/20' : 'bg-blue-600/10'}`}></div>
+          </div>
+
+          {/* ACTIONS */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleConfinement}
+              disabled={isConstituting || isAnalyzing}
+              className={`py-4 rounded-xl font-bold uppercase tracking-widest text-[9px] border transition-all ${isDanger ? 'bg-red-600 border-red-500 text-white animate-pulse' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}
+            >
+              {isConstituting ? '...' : 'PURGE'}
+            </button>
+            <button
+              onClick={handleDiagnostic}
+              disabled={isConstituting || isAnalyzing}
+              className="py-4 rounded-xl font-bold uppercase tracking-widest text-[9px] border border-blue-500/20 bg-blue-500/5 text-blue-400 hover:bg-blue-500/10 transition-all"
+            >
+              SCAN
+            </button>
           </div>
         </div>
+
       </div>
 
       {diagnosticReport && (

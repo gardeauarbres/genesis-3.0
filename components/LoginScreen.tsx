@@ -37,18 +37,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             const storedEp = localStorage.getItem('GENESIS_APPWRITE_ENDPOINT');
             const storedPr = localStorage.getItem('GENESIS_APPWRITE_PROJECT');
 
-            // Priorité aux variables d'environnement si pas de localStorage
             if (storedEp) setConfigEndpoint(storedEp);
-            else {
-                const envEp = import.meta.env.EXPO_PUBLIC_APPWRITE_ENDPOINT || (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_APPWRITE_ENDPOINT);
-                if (envEp) setConfigEndpoint(envEp);
-            }
-
             if (storedPr) setConfigProject(storedPr);
-            else {
-                const envPr = import.meta.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID || (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_APPWRITE_PROJECT_ID);
-                if (envPr) setConfigProject(envPr);
-            }
         }
     }, []);
 

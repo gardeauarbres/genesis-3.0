@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, SecurityLog } from '../types';
 import KernelStream from './KernelStream';
 import { groqService } from '../services/groqService';
 import { geminiService } from '../services/geminiService';
 import { appwriteService } from '../services/appwriteService';
+import IntergalacticBackground from './IntergalacticBackground';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -44,9 +45,9 @@ const ApiKeyGuard: React.FC = () => {
       <div
         onClick={handleClick}
         className={`p-4 rounded-xl border transition-all cursor-pointer group relative overflow-hidden ${hasKey
-            ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-blue-500/5 border-blue-500/20 hover:border-blue-500/40')
-            : 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40'
-          }`}
+          ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-blue-500/5 border-blue-500/20 hover:border-blue-500/40')
+          : 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40'
+          } border-glow backdrop-blur-sm`}
       >
         <div className="flex items-center gap-3 relative z-10">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${hasKey ? (isSystemManaged ? 'bg-green-600 text-white shadow-[0_0_10px_#16a34a]' : 'bg-blue-600 text-white shadow-[0_0_10px_#2563eb]') : 'bg-gray-700 text-gray-400'
@@ -69,7 +70,7 @@ const ApiKeyGuard: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowModal(false)}>
           <div
-            className="w-full max-w-md bg-[#0a0a0a] border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(37,99,235,0.2)] relative"
+            className="w-full max-w-md bg-[#0a0a0a] border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(37,99,235,0.2)] relative glass-panel"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-6">
@@ -155,9 +156,9 @@ const AppwriteGuard: React.FC = () => {
       <div
         onClick={handleClick}
         className={`p-4 rounded-xl border transition-all cursor-pointer group relative overflow-hidden mt-3 ${isLinked
-            ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-pink-500/5 border-pink-500/20 hover:border-pink-500/40')
-            : 'bg-gray-800/40 border-gray-700 hover:border-pink-500/30'
-          }`}
+          ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-pink-500/5 border-pink-500/20 hover:border-pink-500/40')
+          : 'bg-gray-800/40 border-gray-700 hover:border-pink-500/30'
+          } border-glow backdrop-blur-sm`}
       >
         <div className="flex items-center gap-3 relative z-10">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${isLinked ? (isSystemManaged ? 'bg-green-600 text-white' : 'bg-pink-600 text-white shadow-[0_0_10px_#db2777]') : 'bg-gray-700 text-gray-400'
@@ -179,7 +180,7 @@ const AppwriteGuard: React.FC = () => {
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-pink-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(219,39,119,0.2)]" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-pink-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(219,39,119,0.2)] glass-panel" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-white font-heading tracking-wide mb-4 flex items-center gap-2">
               <span className="text-pink-500">❖</span> CONFIGURATION APPWRITE
             </h3>
@@ -223,9 +224,9 @@ const VertexKeyGuard: React.FC = () => {
     <div
       onClick={handleConnect}
       className={`p-4 rounded-xl border transition-all cursor-pointer group relative overflow-hidden mt-3 ${status === 'active'
-          ? 'bg-purple-500/5 border-purple-500/20 hover:border-purple-500/40'
-          : 'bg-gray-800/40 border-gray-700 hover:border-purple-500/30'
-        }`}
+        ? 'bg-purple-500/5 border-purple-500/20 hover:border-purple-500/40'
+        : 'bg-gray-800/40 border-gray-700 hover:border-purple-500/30'
+        } border-glow backdrop-blur-sm`}
     >
       <div className="flex items-center gap-3 relative z-10">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${status === 'active' ? 'bg-purple-600 text-white shadow-[0_0_10px_#9333ea]' : status === 'connecting' ? 'bg-purple-900/50 text-purple-300' : 'bg-gray-700 text-gray-400'
@@ -297,9 +298,9 @@ const GroqKeyGuard: React.FC = () => {
       <div
         onClick={handleClick}
         className={`p-4 rounded-xl border transition-all cursor-pointer group relative overflow-hidden mt-3 ${hasKey && isEnabled
-            ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-orange-500/5 border-orange-500/20 hover:border-orange-500/40')
-            : 'bg-gray-800/40 border-gray-700 hover:border-orange-500/30'
-          }`}
+          ? (isSystemManaged ? 'bg-green-500/5 border-green-500/20' : 'bg-orange-500/5 border-orange-500/20 hover:border-orange-500/40')
+          : 'bg-gray-800/40 border-gray-700 hover:border-orange-500/30'
+          } border-glow backdrop-blur-sm`}
       >
         <div className="flex items-center gap-3 relative z-10">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0 ${hasKey && isEnabled ? (isSystemManaged ? 'bg-green-600 text-white shadow-[0_0_10px_#16a34a]' : 'bg-orange-600 text-white shadow-[0_0_10px_#f97316]') : 'bg-gray-700 text-gray-400'
@@ -331,7 +332,7 @@ const GroqKeyGuard: React.FC = () => {
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowModal(false)}>
-          <div className="w-full max-w-md bg-[#0a0a0a] border border-orange-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(249,115,22,0.2)]" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-orange-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(249,115,22,0.2)] glass-panel" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-white font-heading tracking-wide mb-4">INITIALISATION LPU</h3>
             <div className="space-y-4">
               <div>
@@ -416,24 +417,53 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
     };
   }, []);
 
-  const navItems: { id: AppView; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'Tableau de Bord', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-    { id: 'fusion', label: 'Nexus Multi-Agents', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
-    { id: 'architecture', label: 'Lattice', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-    { id: 'evolution', label: 'Génome IA', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { id: 'lab', label: 'Vocal', icon: 'M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z' },
-    { id: 'vault', label: 'Coffre PQC', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-    { id: 'threats', label: 'Menaces Cyber', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
-    { id: 'consciousness', label: 'Conscience', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { id: 'visualizer', label: 'Synthèse', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
-    { id: 'map', label: 'Carte', icon: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' },
+  // NOUVELLE STRUCTURE MENU GROUPÉ
+  const navGroups = [
+    {
+      title: "GOUVERNANCE",
+      items: [
+        { id: 'dashboard', label: 'Tableau de Bord', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+        { id: 'fusion', label: 'Nexus Multi-Agents', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+        { id: 'architecture', label: 'Lattice', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+      ]
+    },
+    {
+      title: "INTELLIGENCE",
+      items: [
+        { id: 'evolution', label: 'Génome IA', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+        { id: 'lab', label: 'Vocal', icon: 'M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z' },
+        { id: 'consciousness', label: 'Conscience', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+      ]
+    },
+    {
+      title: "DÉFENSE",
+      items: [
+        { id: 'threats', label: 'Menaces Cyber', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' },
+        { id: 'vault', label: 'Coffre PQC', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+        { id: 'visualizer', label: 'Synthèse', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
+      ]
+    },
+    {
+      title: "OPÉRATIONS",
+      items: [
+        { id: 'map', label: 'Carte Globale', icon: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' },
+      ]
+    }
   ];
 
   return (
     <div className={`flex h-screen h-[100dvh] overflow-hidden bg-[#050505] selection:bg-blue-500/30 transition-all duration-1000 ${criticalState ? 'animate-glitch contrast-125 brightness-110 grayscale-[0.3]' : ''}`}>
 
+      {/* Immersive Background */}
+      <div className="fixed inset-0 z-0">
+        <IntergalacticBackground />
+        <div className="absolute inset-0 pointer-events-none scanline opacity-20 mix-blend-overlay"></div>
+      </div>
+
       {/* HUD Overlay */}
-      <KernelStream view={activeView} />
+      <div className="relative z-10 pointer-events-none">
+        <KernelStream view={activeView} />
+      </div>
 
       {/* Mobile Backdrop */}
       {mobileMenuOpen && (
@@ -445,8 +475,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
 
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 glass border-r border-white/5 flex flex-col transform transition-transform duration-300 ease-in-out
-        lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-[60] w-72 glass border-r border-white/5 flex flex-col transform transition-transform duration-300 ease-in-out
+        lg:relative lg:translate-x-0 bg-black/80 backdrop-blur-xl
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
@@ -455,28 +485,36 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.8)] transition-transform group-hover:rotate-12 ${criticalState ? 'bg-red-600 animate-pulse' : 'bg-blue-600'}`}>
                 <span className="font-bold text-xl text-white">Ω</span>
               </div>
-              <h1 className="text-2xl font-bold font-heading tracking-tighter text-white uppercase italic">Genesis</h1>
+              <h1 className="text-2xl font-bold font-heading tracking-tighter text-white uppercase italic text-glow">Genesis</h1>
             </div>
-            <button onClick={() => setMobileMenuOpen(false)} className="lg:hidden text-gray-400 hover:text-white">
+            <button onClick={() => setMobileMenuOpen(false)} className="lg:hidden p-2 text-white hover:text-red-400 transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
 
-          <nav className="space-y-1 mb-8">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => { setView(item.id); setMobileMenuOpen(false); }}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group ${activeView === item.id
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-[inset_0_0_10px_rgba(37,99,235,0.1)]'
-                    : 'text-gray-500 hover:text-white hover:bg-white/5'
-                  }`}
-              >
-                <svg className={`w-4 h-4 shrink-0 ${activeView === item.id ? 'text-blue-400' : 'group-hover:text-blue-500 transition-colors'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                </svg>
-                <span className="font-bold text-[10px] uppercase tracking-[0.2em] truncate">{item.label}</span>
-              </button>
+          <nav className="space-y-6 mb-8">
+            {navGroups.map((group, idx) => (
+              <div key={idx}>
+                <h3 className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-3 ml-2">{group.title}</h3>
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => { setView(item.id as AppView); setMobileMenuOpen(false); }}
+                      className={`w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden ${activeView === item.id
+                        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                        : 'text-gray-500 hover:text-white hover:bg-white/5'
+                        }`}
+                    >
+                      <svg className={`w-4 h-4 shrink-0 transition-colors ${activeView === item.id ? 'text-blue-400' : 'group-hover:text-blue-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                      </svg>
+                      <span className="font-bold text-[10px] uppercase tracking-widest truncate">{item.label}</span>
+                      {activeView === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/4 bg-blue-500 rounded-r-lg shadow-[0_0_10px_#3b82f6]"></div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
 
@@ -488,18 +526,21 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
           </div>
         </div>
 
-        <div className="p-4 md:p-6 bg-black/40 border-t border-white/5">
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-4">LOG_KERNEL_Ω</h3>
+        <div className="p-4 md:p-6 bg-black/40 border-t border-white/5 backdrop-blur-md">
+          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span>
+            LOG_KERNEL_Ω
+          </h3>
           <div className="space-y-3">
             {logs.map(log => (
-              <div key={log.id} className="animate-slideIn relative pl-3 border-l-2 border-white/5">
+              <div key={log.id} className="animate-slideIn relative pl-3 border-l-2 border-white/5 group hover:border-blue-500/50 transition-colors cursor-crosshair">
                 <div className="flex justify-between text-[8px] mb-1">
-                  <span className="text-gray-600 font-mono">{log.timestamp}</span>
+                  <span className="text-gray-600 font-mono group-hover:text-blue-400">{log.timestamp}</span>
                   <span className={`font-bold ${log.type === 'critical' ? 'text-red-500 animate-pulse' : log.type === 'evolution' ? 'text-purple-500' : 'text-blue-500'}`}>
                     {log.type.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-[9px] text-gray-400 font-mono leading-none truncate">{log.message}</p>
+                <p className="text-[9px] text-gray-400 font-mono leading-none truncate group-hover:text-white transition-colors">{log.message}</p>
               </div>
             ))}
           </div>
@@ -507,13 +548,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
-        <header className="h-16 border-b border-white/5 glass flex items-center justify-between px-4 md:px-10 z-10 shrink-0">
+      <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative z-10">
+        <header className="h-16 border-b border-white/5 glass flex items-center justify-between px-4 md:px-10 z-10 shrink-0 shadow-lg shadow-black/50">
           <div className="flex gap-4 md:gap-8 items-center">
-            {/* Mobile Menu Trigger */}
+            {/* Mobile Menu Trigger - High Z-Index & Contrast */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5"
+              className="lg:hidden p-2 text-white bg-blue-600/20 border border-blue-500/50 rounded-lg hover:bg-blue-600 hover:text-white transition-all active:scale-95 z-50 relative"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
@@ -526,25 +567,38 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setView }) => {
             <div className="flex flex-col">
               <span className="text-[8px] text-gray-500 uppercase font-bold tracking-widest hidden md:block">STABILITÉ_ENTROPIE</span>
               <div className="flex items-center gap-3">
-                <div className="w-20 md:w-32 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                <div className="w-20 md:w-32 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
                   <div className={`h-full transition-all duration-1000 ${criticalState ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${telemetry.entropy}%` }}></div>
+                  {/* Scanning line for bar */}
+                  <div className="absolute inset-y-0 w-1 bg-white/50 animate-[scanline_2s_linear_infinite]" style={{ left: `${telemetry.entropy}%` }}></div>
                 </div>
                 <span className={`text-[10px] font-mono ${criticalState ? 'text-red-500 animate-pulse' : 'text-green-400'}`}>{telemetry.entropy}%</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <div className={`hidden md:flex items-center gap-2 border px-4 py-1.5 rounded-full ${criticalState ? 'bg-red-500/20 border-red-500/40 animate-bounce' : 'bg-red-500/10 border-red-500/20'}`}>
+            <div className={`hidden md:flex items-center gap-2 border px-4 py-1.5 rounded-full transition-all hover:bg-red-500/10 cursor-help ${criticalState ? 'bg-red-500/20 border-red-500/40 animate-bounce' : 'bg-red-500/10 border-red-500/20'}`}>
               <span className={`w-2 h-2 rounded-full ${telemetry.exterminated > 0 ? 'bg-red-500 animate-ping' : 'bg-red-900'}`}></span>
               <span className="text-[10px] font-bold text-red-500 uppercase font-mono">{telemetry.exterminated} PURGES</span>
             </div>
-            <div className="text-[9px] text-gray-500 font-mono">v0.9.1</div>
+            <div className="text-[9px] text-gray-500 font-mono hover:text-blue-400 cursor-pointer">v0.9.1</div>
           </div>
         </header>
 
-        <main className={`flex-1 overflow-y-auto relative p-4 md:p-8 lg:p-12 custom-scrollbar bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.02)_0%,transparent_50%)] ${criticalState ? 'bg-red-900/5' : ''}`}>
+        <main className={`flex-1 overflow-y-auto relative p-4 md:p-8 lg:p-12 custom-scrollbar ${criticalState ? 'bg-red-900/5' : ''}`}>
           <div className="max-w-7xl mx-auto relative z-10 h-full flex flex-col">
-            {children}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeView}
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="h-full flex flex-col"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </main>
       </div>

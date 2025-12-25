@@ -25,41 +25,39 @@ interface GlobalConfig {
 }
 
 // Helper pour lire l'environnement (compatible Vite & Node)
-const getEnv = (key: string) => {
-    if (import.meta.env && import.meta.env[key]) return import.meta.env[key];
-    if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-    return undefined;
-};
+// Helper supprimé (utilisation directe de process.env requise par Next.js)
 
 // Configuration par défaut qui tente de lire les variables d'environnement
 // Si les variables ne sont pas là, on utilise des chaînes vides ou des valeurs par défaut
+// Configuration par défaut avec accès explicite pour le remplacement par le compilateur Next.js
 const DEFAULT_CONFIG: GlobalConfig = {
     gemini: {
-        key: getEnv('API_KEY') || '',
-        isActive: !!getEnv('API_KEY'),
+        key: process.env.API_KEY || '',
+        isActive: !!process.env.API_KEY,
         lastUpdated: Date.now()
     },
     groq: {
-        key: getEnv('GROQ_API_KEY') || '',
-        isActive: !!getEnv('GROQ_API_KEY'),
+        key: process.env.GROQ_API_KEY || '',
+        isActive: !!process.env.GROQ_API_KEY,
         lastUpdated: Date.now()
     },
     vertex: {
-        projectId: getEnv('VERTEX_PROJECT_ID') || '',
-        location: getEnv('VERTEX_LOCATION') || 'us-central1',
-        isActive: !!getEnv('VERTEX_PROJECT_ID')
+        projectId: process.env.VERTEX_PROJECT_ID || '',
+        location: process.env.VERTEX_LOCATION || 'us-central1',
+        isActive: !!process.env.VERTEX_PROJECT_ID
     },
     appwrite: {
-        projectId: getEnv('NEXT_PUBLIC_APPWRITE_PROJECT_ID') || getEnv('EXPO_PUBLIC_APPWRITE_PROJECT_ID') || '694a84b40023501db111',
-        endpoint: getEnv('NEXT_PUBLIC_APPWRITE_ENDPOINT') || getEnv('EXPO_PUBLIC_APPWRITE_ENDPOINT') || 'https://fra.cloud.appwrite.io/v1',
-        databaseId: getEnv('NEXT_PUBLIC_APPWRITE_DB_ID') || getEnv('EXPO_PUBLIC_APPWRITE_DB_ID') || 'genesis_core',
-        collectionId: getEnv('NEXT_PUBLIC_APPWRITE_COLLECTION_ID') || getEnv('EXPO_PUBLIC_APPWRITE_COLLECTION_ID') || 'fragments',
-        isActive: !!(getEnv('NEXT_PUBLIC_APPWRITE_PROJECT_ID') || getEnv('EXPO_PUBLIC_APPWRITE_PROJECT_ID'))
+        projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '694a84b40023501db111',
+        endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1',
+        databaseId: process.env.NEXT_PUBLIC_APPWRITE_DB_ID || 'genesis_core',
+        collectionId: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID || 'fragments',
+        isActive: !!process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
     }
 };
 
 export const adminService = {
     getConfig(): GlobalConfig {
+        if (typeof window === 'undefined') return DEFAULT_CONFIG;
         const stored = localStorage.getItem(ADMIN_STORAGE_KEY);
         if (stored) {
             const parsed = JSON.parse(stored);

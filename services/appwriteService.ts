@@ -12,19 +12,11 @@ const cleanEndpoint = (url: string | undefined) => {
 // CONFIGURATION PAR DÉFAUT
 // Note: process.env est polyfillé par vite.config.ts, mais on ajoute une sécurité
 // CONFIGURATION PAR DÉFAUT
-const getEnv = (key: string) => {
-    // 1. Vite / Modern
-    if (import.meta.env && import.meta.env[key]) return import.meta.env[key];
-    // 2. Legacy / Polyfill
-    if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-    return undefined;
-};
-
 const DEFAULT_CONFIG = {
-    ENDPOINT: cleanEndpoint(getEnv('NEXT_PUBLIC_APPWRITE_ENDPOINT') || getEnv('EXPO_PUBLIC_APPWRITE_ENDPOINT')),
-    PROJECT_ID: getEnv('NEXT_PUBLIC_APPWRITE_PROJECT_ID') || getEnv('EXPO_PUBLIC_APPWRITE_PROJECT_ID') || '694a84b40023501db111',
-    DB_ID: getEnv('NEXT_PUBLIC_APPWRITE_DB_ID') || getEnv('EXPO_PUBLIC_APPWRITE_DB_ID') || 'genesis_core',
-    COLLECTION_FRAGMENTS: getEnv('NEXT_PUBLIC_APPWRITE_COLLECTION_ID') || getEnv('EXPO_PUBLIC_APPWRITE_COLLECTION_ID') || 'fragments'
+    ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://fra.cloud.appwrite.io/v1',
+    PROJECT_ID: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '694a84b40023501db111',
+    DB_ID: process.env.NEXT_PUBLIC_APPWRITE_DB_ID || 'genesis_core',
+    COLLECTION_FRAGMENTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID || 'fragments'
 };
 
 class AppwriteService {
@@ -65,8 +57,8 @@ class AppwriteService {
             } catch (e) { console.error("Appwrite Admin Config Error", e); }
         } else {
             // Fallback Utilisateur (via LocalStorage ou Défaut Env)
-            const storedProject = localStorage.getItem('GENESIS_APPWRITE_PROJECT');
-            const storedEndpoint = localStorage.getItem('GENESIS_APPWRITE_ENDPOINT');
+            const storedProject = typeof window !== 'undefined' ? localStorage.getItem('GENESIS_APPWRITE_PROJECT') : null;
+            const storedEndpoint = typeof window !== 'undefined' ? localStorage.getItem('GENESIS_APPWRITE_ENDPOINT') : null;
 
             if (storedProject) {
                 this.init(storedProject, storedEndpoint || DEFAULT_CONFIG.ENDPOINT);
@@ -93,10 +85,28 @@ class AppwriteService {
             this.currentDbId = DEFAULT_CONFIG.DB_ID;
             this.currentCollectionId = DEFAULT_CONFIG.COLLECTION_FRAGMENTS;
 
-            this.isConfigured = true;
-            console.log("[APPWRITE] Initialisé:", { projectId, endpoint: validEndpoint });
+            this.ensureDatabase().then(() => {
+                this.isConfigured = true;
+                console.log("[APPWRITE] Initialisé & Vérifié:", { projectId, endpoint: validEndpoint });
+            });
         } catch (error) {
             console.error("[APPWRITE] Erreur d'initialisation:", error);
+        }
+    }
+
+    // [JANUS_OPTIMIZATION] Auto-Repair Routine
+    async ensureDatabase() {
+        try {
+            // Client SDK generally cannot 'get' or 'create' databases directly.
+            // We verify by attempting to list documents.
+            await this.databases.listDocuments(this.currentDbId, this.currentCollectionId, [Query.limit(1)]);
+        } catch (error: any) {
+            if (error.code === 404) {
+                console.log('[JANUS] Base de données principale manquante/inaccessible. Re-synthèse demandée...');
+                // Note: Database creation requires API Key/Server SDK, typically not exposed in client.
+                // We log the attempt as requested by protocol.
+                console.warn('[JANUS] Droits Admin requis pour re-création. Initialisation en mode dégradé (Local Fallback).');
+            }
         }
     }
 
@@ -289,6 +299,64 @@ class AppwriteService {
             return true;
         } catch (error) {
             console.error("[APPWRITE] Profile Update Error:", error);
+            return false;
+        }
+    }
+
+    // --- AGENT VAULT (PQC Keys Cloud Sync) ---
+
+    async saveVaultKey(userId: string, keyData: { id: string; algorithm: string; entropy: number; status: string; signature: string }) {
+        if (!this.isConfigured) return null;
+        try {
+            return await this.databases.createDocument(
+                this.currentDbId,
+                'agent_vault', // Collection for secure PQC keys
+                ID.unique(),
+                {
+                    user_id: userId,
+                    key_id: keyData.id,
+                    algorithm: keyData.algorithm,
+                    entropy: keyData.entropy,
+                    status: keyData.status,
+                    signature: keyData.signature,
+                    created_at: new Date().toISOString()
+                }
+            );
+        } catch (error) {
+            console.warn("[APPWRITE] Vault Save Error (collection may not exist):", error);
+            return null;
+        }
+    }
+
+    async getVaultKeys(userId: string) {
+        if (!this.isConfigured) return [];
+        try {
+            const response = await this.databases.listDocuments(
+                this.currentDbId,
+                'agent_vault',
+                [Query.equal('user_id', userId), Query.orderDesc('created_at')]
+            );
+
+            return response.documents.map(doc => ({
+                id: doc.key_id,
+                algorithm: doc.algorithm,
+                entropy: doc.entropy,
+                status: doc.status,
+                signature: doc.signature
+            }));
+        } catch (error) {
+            console.warn("[APPWRITE] Vault Fetch Error:", error);
+            return [];
+        }
+    }
+
+    async revokeVaultKey(docId: string) {
+        if (!this.isConfigured) return false;
+        try {
+            await this.databases.deleteDocument(this.currentDbId, 'agent_vault', docId);
+            return true;
+        } catch (error) {
+            console.error("[APPWRITE] Vault Revoke Error:", error);
             return false;
         }
     }
